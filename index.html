@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meridian &amp; Stone — Chartered Accountants &amp; Financial Advisory</title>
+  <meta name="description" content="Integrated accounting, taxation, audit and business advisory services for ambitious businesses. Meridian &amp; Stone — Chartered Accountants, Hyderabad.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ========== HEADER ========== -->
+  <header class="header" id="header">
+    <div class="header__inner">
+      <a href="#" class="header__brand" aria-label="Meridian & Stone Home">
+        <div class="header__logo">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="1" y="1" width="30" height="30" rx="4" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M8 24V8h3l5 9 5-9h3v16h-3v-10l-5 9-5-9v10H8z" fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="header__brand-text">
+          <span class="header__name">MERIDIAN &amp; STONE</span>
+          <span class="header__sub">CHARTERED ACCOUNTANTS</span>
+        </div>
+      </a>
+
+      <nav class="header__nav" id="mainNav" aria-label="Main navigation">
+        <a href="#difference" class="header__nav-link">ABOUT</a>
+        <a href="#services" class="header__nav-link">SERVICES</a>
+        <a href="#approach" class="header__nav-link">APPROACH</a>
+        <a href="#insights" class="header__nav-link">INSIGHTS</a>
+      </nav>
+
+      <div class="header__right">
+        <a href="#contact" class="header__cta">BOOK A CONSULTATION <span class="arrow">→</span></a>
+        <button class="header__burger" id="burgerBtn" aria-label="Toggle menu" aria-expanded="false">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile nav overlay -->
+  <div class="mobile-nav" id="mobileNav">
+    <nav class="mobile-nav__links">
+      <a href="#difference" class="mobile-nav__link">ABOUT</a>
+      <a href="#services" class="mobile-nav__link">SERVICES</a>
+      <a href="#approach" class="mobile-nav__link">APPROACH</a>
+      <a href="#insights" class="mobile-nav__link">INSIGHTS</a>
+      <a href="#contact" class="mobile-nav__link mobile-nav__link--cta">BOOK A CONSULTATION →</a>
+    </nav>
+  </div>
+
+  <!-- ================================================
+       HERO — SCROLL-CONTROLLED CINEMATIC VIDEO
+       ================================================ -->
+  <section class="hero" id="hero">
+    <div class="hero__scroll-container">
+      <div class="hero__viewport">
+
+        <!-- ===== VIDEO ===== -->
+        <video
+          class="hero__video"
+          id="heroVideo"
+          muted
+          playsinline
+          preload="auto"
+        >
+          <source src="public/ca-hero.mp4" type="video/mp4">
+        </video>
+        <div class="hero__fallback" id="heroFallback"></div>
+
+        <!-- Cinematic overlays (never opaque) -->
+        <div class="hero__overlay-gradient"></div>
+        <div class="hero__overlay-vignette"></div>
+        <div class="hero__overlay-bottom"></div>
+
+        <!-- ===== CONTENT STATES ===== -->
+        <div class="hero__content-layer">
+
+          <!-- STATE 01 — Hero intro -->
+          <div class="hs" id="hs1" data-hero-state="1">
+            <div class="hs__inner">
+              <p class="hs__eyebrow">CHARTERED ACCOUNTANTS</p>
+              <h1 class="hs__headline">
+                <span class="hs__line hs__line--1">FINANCIAL CLARITY</span>
+                <span class="hs__line hs__line--2">FOR DECISIONS THAT</span>
+                <span class="hs__line hs__line--3">MOVE BUSINESS FORWARD.</span>
+              </h1>
+              <p class="hs__desc">We provide integrated accounting, taxation, audit and business advisory services that help ambitious businesses stay compliant, understand their numbers and make confident financial decisions.</p>
+              <div class="hs__buttons">
+                <a href="#contact" class="btn btn--primary">BOOK A CONSULTATION <span class="arrow">→</span></a>
+                <a href="#services" class="btn btn--ghost">EXPLORE OUR SERVICES <span class="arrow">↓</span></a>
+              </div>
+            </div>
+          </div>
+
+          <!-- STATE 02 — About the firm -->
+          <div class="hs" id="hs2" data-hero-state="2">
+            <div class="hs__inner">
+              <p class="hs__eyebrow">ABOUT MERIDIAN &amp; STONE</p>
+              <h2 class="hs__headline">
+                <span class="hs__line">MORE THAN</span>
+                <span class="hs__line">ACCOUNTING.</span>
+              </h2>
+              <p class="hs__desc">We work alongside business owners, entrepreneurs and growing enterprises to bring clarity to complex financial decisions. Our role is to provide practical insight that helps clients move forward with confidence.</p>
+            </div>
+          </div>
+
+          <!-- STATE 03 — Services -->
+          <div class="hs" id="hs3" data-hero-state="3">
+            <div class="hs__inner hs__inner--wide">
+              <p class="hs__eyebrow">OUR SERVICES</p>
+              <h2 class="hs__headline">
+                <span class="hs__line">ONE FINANCIAL PARTNER.</span>
+                <span class="hs__line">EVERY CRITICAL DECISION.</span>
+              </h2>
+              <div class="hs__expertise-list">
+                <div class="hs__expertise-item">01 — ACCOUNTING &amp; BOOKKEEPING</div>
+                <div class="hs__expertise-item">02 — TAX ADVISORY &amp; PLANNING</div>
+                <div class="hs__expertise-item">03 — AUDIT &amp; ASSURANCE</div>
+                <div class="hs__expertise-item">04 — BUSINESS ADVISORY</div>
+                <div class="hs__expertise-item">05 — FINANCIAL PLANNING</div>
+                <div class="hs__expertise-item">06 — COMPLIANCE &amp; REGULATORY</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- STATE 04 — Trust / Stats -->
+          <div class="hs" id="hs4" data-hero-state="4">
+            <div class="hs__inner">
+              <p class="hs__eyebrow">EXPERIENCE &amp; TRUST</p>
+              <h2 class="hs__headline">
+                <span class="hs__line">BUILT ON EXPERIENCE.</span>
+                <span class="hs__line">MEASURED BY TRUST.</span>
+              </h2>
+              <div class="hs__stats">
+                <div class="hs__stat">
+                  <span class="hs__stat-num">15+</span>
+                  <span class="hs__stat-label">Years of Professional Experience</span>
+                </div>
+                <div class="hs__stat">
+                  <span class="hs__stat-num">500+</span>
+                  <span class="hs__stat-label">Clients &amp; Businesses Supported</span>
+                </div>
+                <div class="hs__stat">
+                  <span class="hs__stat-num">₹2K+</span>
+                  <span class="hs__stat-label">Cr. Advisory Exposure</span>
+                </div>
+                <div class="hs__stat">
+                  <span class="hs__stat-num">98%</span>
+                  <span class="hs__stat-label">Client Retention</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- STATE 05 — Approach -->
+          <div class="hs" id="hs5" data-hero-state="5">
+            <div class="hs__inner">
+              <p class="hs__eyebrow">OUR APPROACH</p>
+              <h2 class="hs__headline">
+                <span class="hs__line">A CLEARER</span>
+                <span class="hs__line">WAY FORWARD.</span>
+              </h2>
+              <div class="hs__approach">
+                <div class="hs__approach-step">
+                  <span class="hs__approach-num">01</span>
+                  <span class="hs__approach-name">UNDERSTAND</span>
+                </div>
+                <div class="hs__approach-step">
+                  <span class="hs__approach-num">02</span>
+                  <span class="hs__approach-name">ADVISE</span>
+                </div>
+                <div class="hs__approach-step">
+                  <span class="hs__approach-num">03</span>
+                  <span class="hs__approach-name">EXECUTE</span>
+                </div>
+                <div class="hs__approach-step">
+                  <span class="hs__approach-num">04</span>
+                  <span class="hs__approach-name">EVOLVE</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- STATE 06 — Final CTA -->
+          <div class="hs" id="hs6" data-hero-state="6">
+            <div class="hs__inner hs__inner--center">
+              <p class="hs__eyebrow">LET'S TALK</p>
+              <h2 class="hs__headline hs__headline--large">
+                <span class="hs__line">READY FOR GREATER</span>
+                <span class="hs__line">FINANCIAL CLARITY?</span>
+              </h2>
+              <p class="hs__desc">Whether you are building a business, managing growth or planning what comes next, we provide the financial expertise and practical guidance needed to move forward with confidence.</p>
+              <a href="#contact" class="btn btn--primary btn--large">START A CONVERSATION <span class="arrow">→</span></a>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Scroll indicator (bottom) -->
+        <div class="hero__scroll-indicator" id="heroScrollIndicator">
+          <div class="hero__scroll-left">
+            <div class="hero__scroll-line"></div>
+            <span>SCROLL TO EXPLORE</span>
+          </div>
+          <div class="hero__scroll-right">
+            <span id="scrollCounter">01 / 06</span>
+          </div>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="hero__progress">
+          <div class="hero__progress-bar" id="heroProgressBar"></div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================
+       POST-VIDEO SECTIONS
+       ================================================ -->
+
+  <!-- ABOUT SECTION -->
+  <section class="section section--light" id="difference">
+    <div class="container">
+      <div class="diff__grid">
+        <div class="diff__left">
+          <p class="section-label anim-reveal">ABOUT MERIDIAN &amp; STONE</p>
+          <h2 class="diff__headline anim-reveal">
+            MORE THAN<br>
+            ACCOUNTING.<br>
+            A PARTNER IN YOUR<br>
+            NEXT CHAPTER.
+          </h2>
+        </div>
+        <div class="diff__right">
+          <p class="diff__desc anim-reveal">At Meridian &amp; Stone, we believe accounting should do more than record what has already happened. We work alongside business owners, entrepreneurs and growing enterprises to bring clarity to complex financial decisions.</p>
+          <p class="diff__desc anim-reveal">From maintaining accurate financial records and meeting statutory obligations to planning for growth, our role is to provide practical insight that helps clients move forward with confidence.</p>
+          <p class="diff__desc anim-reveal">Our approach combines technical accounting expertise with a practical understanding of business. We focus on accuracy, transparency and long-term relationships rather than short-term transactions.</p>
+          <div class="diff__points anim-reveal">
+            <div class="diff__point">
+              <span class="diff__point-num">01</span>
+              <div>
+                <h4 class="diff__point-title">FINANCIAL ACCURACY</h4>
+                <p class="diff__point-desc">Reliable information you can build decisions on.</p>
+              </div>
+            </div>
+            <div class="diff__point">
+              <span class="diff__point-num">02</span>
+              <div>
+                <h4 class="diff__point-title">REGULATORY CONFIDENCE</h4>
+                <p class="diff__point-desc">Structured support for your compliance responsibilities.</p>
+              </div>
+            </div>
+            <div class="diff__point">
+              <span class="diff__point-num">03</span>
+              <div>
+                <h4 class="diff__point-title">STRATEGIC PERSPECTIVE</h4>
+                <p class="diff__point-desc">Financial information translated into practical business insight.</p>
+              </div>
+            </div>
+            <div class="diff__point">
+              <span class="diff__point-num">04</span>
+              <div>
+                <h4 class="diff__point-title">LONG-TERM PARTNERSHIP</h4>
+                <p class="diff__point-desc">Advice that evolves as your business grows.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES SECTION -->
+  <section class="section section--light section--bordered section--alt" id="services">
+    <div class="container">
+      <p class="section-label anim-reveal">OUR SERVICES</p>
+      <h2 class="light-headline anim-reveal">
+        ONE FINANCIAL PARTNER.<br>
+        EVERY CRITICAL DECISION.
+      </h2>
+      <p class="section-intro anim-reveal">From day-to-day accounting to strategic financial advice, our services are designed to give businesses a stronger financial foundation and the visibility required to make better decisions.</p>
+      <div class="svc-list">
+        <a href="#contact" class="svc-item anim-reveal">
+          <span class="svc-item__num">01</span>
+          <div class="svc-item__content">
+            <span class="svc-item__name">ACCOUNTING &amp; BOOKKEEPING</span>
+            <p class="svc-item__desc">Accurate and timely financial records that provide a clear view of business performance, improve financial control and support better day-to-day decision-making.</p>
+          </div>
+          <span class="svc-item__arrow">→</span>
+        </a>
+        <a href="#contact" class="svc-item anim-reveal">
+          <span class="svc-item__num">02</span>
+          <div class="svc-item__content">
+            <span class="svc-item__name">TAX ADVISORY &amp; PLANNING</span>
+            <p class="svc-item__desc">Practical tax planning and compliance support designed around your business and financial circumstances, helping you meet obligations while making informed decisions.</p>
+          </div>
+          <span class="svc-item__arrow">→</span>
+        </a>
+        <a href="#contact" class="svc-item anim-reveal">
+          <span class="svc-item__num">03</span>
+          <div class="svc-item__content">
+            <span class="svc-item__name">AUDIT &amp; ASSURANCE</span>
+            <p class="svc-item__desc">Structured audit and assurance services that strengthen financial reporting, improve transparency and provide confidence to business owners, management and stakeholders.</p>
+          </div>
+          <span class="svc-item__arrow">→</span>
+        </a>
+        <a href="#contact" class="svc-item anim-reveal">
+          <span class="svc-item__num">04</span>
+          <div class="svc-item__content">
+            <span class="svc-item__name">BUSINESS ADVISORY</span>
+            <p class="svc-item__desc">Practical financial and strategic guidance for businesses navigating growth, investment, restructuring, expansion and important financial decisions.</p>
+          </div>
+          <span class="svc-item__arrow">→</span>
+        </a>
+        <a href="#contact" class="svc-item anim-reveal">
+          <span class="svc-item__num">05</span>
+          <div class="svc-item__content">
+            <span class="svc-item__name">FINANCIAL PLANNING</span>
+            <p class="svc-item__desc">Forward-looking financial analysis that helps businesses understand opportunities, allocate resources effectively and plan for sustainable growth.</p>
+          </div>
+          <span class="svc-item__arrow">→</span>
+        </a>
+        <a href="#contact" class="svc-item anim-reveal">
+          <span class="svc-item__num">06</span>
+          <div class="svc-item__content">
+            <span class="svc-item__name">COMPLIANCE &amp; REGULATORY</span>
+            <p class="svc-item__desc">Reliable support across statutory and regulatory requirements, helping businesses remain organised, compliant and prepared.</p>
+          </div>
+          <span class="svc-item__arrow">→</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHY US SECTION -->
+  <section class="section section--light section--bordered" id="whyus">
+    <div class="container">
+      <div class="whyus-light__grid">
+        <div class="whyus-light__left">
+          <p class="section-label anim-reveal">WHY MERIDIAN &amp; STONE</p>
+          <h2 class="light-headline anim-reveal">
+            CLARITY IN<br>
+            COMPLEXITY.<br>
+            CONFIDENCE IN<br>
+            EVERY NUMBER.
+          </h2>
+          <p class="diff__desc anim-reveal">Financial decisions become easier when the numbers are clear. We combine technical expertise with a practical understanding of the business behind the accounts. Our role is not simply to report what has happened, but to help clients understand what the numbers mean and what they can do next.</p>
+        </div>
+        <div class="whyus-light__right">
+          <div class="whyus-light__item anim-reveal">
+            <span class="whyus-light__dot"></span>
+            <h3 class="whyus-light__title">ACCURACY</h3>
+            <p class="whyus-light__desc">Every sound decision starts with reliable financial information.</p>
+          </div>
+          <div class="whyus-light__item anim-reveal">
+            <span class="whyus-light__dot"></span>
+            <h3 class="whyus-light__title">INSIGHT</h3>
+            <p class="whyus-light__desc">We turn financial data into information that can be acted upon.</p>
+          </div>
+          <div class="whyus-light__item anim-reveal">
+            <span class="whyus-light__dot"></span>
+            <h3 class="whyus-light__title">RESPONSIVENESS</h3>
+            <p class="whyus-light__desc">Professional guidance when important decisions cannot wait.</p>
+          </div>
+          <div class="whyus-light__item anim-reveal">
+            <span class="whyus-light__dot"></span>
+            <h3 class="whyus-light__title">LONG-TERM THINKING</h3>
+            <p class="whyus-light__desc">We build relationships around where your business is going, not only where it has been.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHO WE WORK WITH -->
+  <section class="section section--light section--alt" id="whowework">
+    <div class="container">
+      <p class="section-label anim-reveal">WHO WE SUPPORT</p>
+      <h2 class="light-headline anim-reveal">
+        BUILT FOR BUSINESSES<br>
+        AT EVERY STAGE.
+      </h2>
+      <p class="section-intro anim-reveal">Different businesses face different financial challenges. Our advisory approach adapts to the stage, structure and objectives of each client.</p>
+      <div class="whowework__grid">
+        <div class="whowework__item anim-reveal">
+          <span class="whowework__num">01</span>
+          <h3 class="whowework__title">STARTUPS &amp; FOUNDERS</h3>
+          <p class="whowework__desc">Build strong financial and compliance foundations from the beginning.</p>
+        </div>
+        <div class="whowework__item anim-reveal">
+          <span class="whowework__num">02</span>
+          <h3 class="whowework__title">SMALL &amp; MID-SIZED BUSINESSES</h3>
+          <p class="whowework__desc">Improve financial visibility, control and decision-making as the business grows.</p>
+        </div>
+        <div class="whowework__item anim-reveal">
+          <span class="whowework__num">03</span>
+          <h3 class="whowework__title">GROWING ENTERPRISES</h3>
+          <p class="whowework__desc">Navigate expansion, investment and increasingly complex financial requirements with informed advice.</p>
+        </div>
+        <div class="whowework__item anim-reveal">
+          <span class="whowework__num">04</span>
+          <h3 class="whowework__title">ENTREPRENEURS &amp; PROFESSIONALS</h3>
+          <p class="whowework__desc">Receive practical guidance across taxation, business finances and long-term financial planning.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- APPROACH SECTION -->
+  <section class="section section--light section--bordered" id="approach">
+    <div class="container">
+      <p class="section-label anim-reveal">OUR APPROACH</p>
+      <h2 class="light-headline anim-reveal">
+        A CLEARER<br>
+        WAY FORWARD.
+      </h2>
+      <div class="approach-light">
+        <div class="approach-light__line anim-reveal"></div>
+        <div class="approach-light__steps">
+          <div class="approach-light__step anim-reveal">
+            <span class="approach-light__num">01</span>
+            <span class="approach-light__name">UNDERSTAND</span>
+            <p class="approach-light__desc">We begin by understanding your business, financial position, objectives and the decisions ahead.</p>
+          </div>
+          <div class="approach-light__step anim-reveal">
+            <span class="approach-light__num">02</span>
+            <span class="approach-light__name">ADVISE</span>
+            <p class="approach-light__desc">We analyse the numbers, identify opportunities and provide clear, practical recommendations.</p>
+          </div>
+          <div class="approach-light__step anim-reveal">
+            <span class="approach-light__num">03</span>
+            <span class="approach-light__name">EXECUTE</span>
+            <p class="approach-light__desc">We turn strategy into action through disciplined accounting, compliance and ongoing financial support.</p>
+          </div>
+          <div class="approach-light__step anim-reveal">
+            <span class="approach-light__num">04</span>
+            <span class="approach-light__name">EVOLVE</span>
+            <p class="approach-light__desc">As your business changes, our advice evolves with it.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INSIGHTS SECTION -->
+  <section class="section section--light section--alt" id="insights">
+    <div class="container">
+      <p class="section-label anim-reveal">INSIGHTS</p>
+      <h2 class="light-headline anim-reveal">
+        THINK BEYOND<br>
+        THE NUMBERS.
+      </h2>
+      <p class="section-intro anim-reveal">Financial decisions rarely exist in isolation. Our insights provide practical perspectives on taxation, compliance, business finance and financial planning to help business owners stay informed.</p>
+      <div class="insights-light__grid">
+        <article class="insights-light__card anim-reveal">
+          <span class="insights-light__tag">TAX &amp; COMPLIANCE</span>
+          <h3 class="insights-light__title">Understanding your tax obligations in a changing regulatory environment</h3>
+          <p class="insights-light__excerpt">Practical perspectives on how evolving tax frameworks affect business planning and compliance requirements.</p>
+          <span class="insights-light__link">READ MORE →</span>
+        </article>
+        <article class="insights-light__card anim-reveal">
+          <span class="insights-light__tag">BUSINESS FINANCE</span>
+          <h3 class="insights-light__title">Building financial clarity into every stage of growth</h3>
+          <p class="insights-light__excerpt">Why accurate financial information is the foundation of every sound business decision.</p>
+          <span class="insights-light__link">READ MORE →</span>
+        </article>
+        <article class="insights-light__card anim-reveal">
+          <span class="insights-light__tag">STARTUP FINANCE</span>
+          <h3 class="insights-light__title">Financial foundations every new business needs</h3>
+          <p class="insights-light__excerpt">The essential accounting, compliance and financial structures that support sustainable business growth from day one.</p>
+          <span class="insights-light__link">READ MORE →</span>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXPERIENCE & TRUST -->
+  <section class="section section--light section--bordered" id="experience">
+    <div class="container">
+      <div class="diff__grid">
+        <div class="diff__left">
+          <p class="section-label anim-reveal">EXPERIENCE &amp; TRUST</p>
+          <h2 class="diff__headline anim-reveal">
+            BUILT ON<br>
+            EXPERIENCE.<br>
+            MEASURED BY<br>
+            TRUST.
+          </h2>
+        </div>
+        <div class="diff__right">
+          <p class="diff__desc anim-reveal">Long-term relationships are built through consistency, transparency and advice that creates practical value. Our clients trust us because we deliver accuracy, provide genuine insight and respond when it matters.</p>
+          <div class="diff__stats anim-reveal">
+            <div class="diff__stat">
+              <span class="diff__stat-num">15+</span>
+              <span class="diff__stat-label">Years of Professional Experience</span>
+            </div>
+            <div class="diff__stat">
+              <span class="diff__stat-num">500+</span>
+              <span class="diff__stat-label">Clients &amp; Businesses Supported</span>
+            </div>
+            <div class="diff__stat">
+              <span class="diff__stat-num">₹2K+</span>
+              <span class="diff__stat-label">Cr. Advisory Exposure</span>
+            </div>
+            <div class="diff__stat">
+              <span class="diff__stat-num">98%</span>
+              <span class="diff__stat-label">Client Retention</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT FORM (light, middle zone) -->
+  <section class="section section--light section--bordered section--alt" id="contactform">
+    <div class="container">
+      <div class="contact__grid">
+        <div class="contact__left">
+          <p class="section-label anim-reveal">GET IN TOUCH</p>
+          <h2 class="light-headline anim-reveal">
+            LET'S START A<br>
+            CONVERSATION.
+          </h2>
+          <p class="diff__desc anim-reveal">Tell us what you are working toward and where you need financial guidance. We will respond promptly and confidentially.</p>
+        </div>
+        <div class="contact__right">
+          <form class="contact-form anim-reveal" onsubmit="return false;">
+            <div class="contact-form__row">
+              <input type="text" placeholder="NAME" class="contact-form__input" aria-label="Name">
+              <input type="email" placeholder="EMAIL" class="contact-form__input" aria-label="Email">
+            </div>
+            <div class="contact-form__row">
+              <input type="tel" placeholder="PHONE" class="contact-form__input" aria-label="Phone">
+              <input type="text" placeholder="COMPANY" class="contact-form__input" aria-label="Company">
+            </div>
+            <textarea placeholder="WHAT CAN WE HELP YOU WITH?" class="contact-form__textarea" rows="4" aria-label="Message"></textarea>
+            <button type="submit" class="btn btn--primary">REQUEST A CONSULTATION <span class="arrow">→</span></button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA (dark, bottom zone) -->
+  <section class="section section--cta" id="contact">
+    <div class="container">
+      <div class="cta-dark__inner anim-reveal">
+        <p class="section-label anim-reveal">LET'S TALK</p>
+        <h2 class="cta-dark__headline">
+          READY FOR GREATER<br>
+          FINANCIAL CLARITY?
+        </h2>
+        <p class="cta-dark__desc">Whether you are building a business, managing growth or planning what comes next, we provide the financial expertise and practical guidance needed to move forward with confidence.</p>
+        <a href="mailto:hello@meridianstone.example" class="btn btn--primary btn--large">START A CONVERSATION <span class="arrow">→</span></a>
+        <p class="cta-dark__note">Confidential. Practical. Built around your objectives.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== FOOTER ========== -->
+  <footer class="footer" id="footer">
+    <div class="container">
+      <div class="footer__top">
+        <div class="footer__brand">
+          <div class="footer__logo">
+            <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="1" y="1" width="30" height="30" rx="4" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M8 24V8h3l5 9 5-9h3v16h-3v-10l-5 9-5-9v10H8z" fill="currentColor"/>
+            </svg>
+          </div>
+          <div>
+            <div class="footer__name">MERIDIAN &amp; STONE</div>
+            <div class="footer__sub">CHARTERED ACCOUNTANTS<br>ACCOUNTING • TAX • AUDIT • ADVISORY</div>
+            <p class="footer__tagline">Clear financial thinking for businesses that are building what comes next.</p>
+          </div>
+        </div>
+        <div class="footer__links">
+          <a href="#difference">ABOUT</a>
+          <a href="#services">SERVICES</a>
+          <a href="#approach">APPROACH</a>
+          <a href="#insights">INSIGHTS</a>
+          <a href="#contact">CONTACT</a>
+        </div>
+      </div>
+      <div class="footer__bottom">
+        <div class="footer__contact">
+          <span><a href="mailto:hello@meridianstone.example">hello@meridianstone.example</a></span>
+          <span>+91 00000 00000</span>
+          <span>Hyderabad, India</span>
+        </div>
+        <div class="footer__copy">
+          <span>&copy; 2026 Meridian &amp; Stone. All rights reserved.</span>
+          <span class="footer__demo">This is a demo website.</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
