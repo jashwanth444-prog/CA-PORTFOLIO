@@ -92,12 +92,41 @@
   var state4Stats = document.querySelectorAll('.hs__stat');
   var state5Steps = document.querySelectorAll('.hs__approach-step');
 
-  // Video loaded
+  // Video loaded — pause immediately so scroll controls all frame advancement.
+  // Mobile browsers will auto-play muted video on load; we must prevent that
+  // so currentTime assignments from scroll position are the sole frame controller.
   video.addEventListener('loadedmetadata', function () {
     if (video.duration && isFinite(video.duration)) {
+      video.pause();
+      video.currentTime = 0;
       videoReady = true;
       videoDuration = video.duration;
-      video.currentTime = 0;
+      video.style.opacity = '1';
+      if (heroFallback) heroFallback.style.opacity = '0';
+      if (!rafId) {
+        lastFrameTime = performance.now();
+        rafId = requestAnimationFrame(videoLoop);
+      }
+    }
+  });
+
+  // Guard: if anything triggers play(), immediately re-pause.
+  // On mobile the browser may attempt autoplay; we always want scroll-controlled frames.
+  video.addEventListener('play', function () {
+    if (videoReady && !videoError) {
+      video.pause();
+    }
+  });
+
+  // Mobile fallback: some browsers (esp. iOS Safari) fire canplay after
+  // loadedmetadata but before enough data is buffered for smooth seeking.
+  // If videoReady was set by loadedmetadata this is a no-op; otherwise it
+  // catches the late-arriving metadata.
+  video.addEventListener('canplay', function () {
+    if (!videoReady && video.duration && isFinite(video.duration)) {
+      video.pause();
+      videoReady = true;
+      videoDuration = video.duration;
       video.style.opacity = '1';
       if (heroFallback) heroFallback.style.opacity = '0';
       if (!rafId) {
@@ -126,7 +155,9 @@
     }
   }, 3000);
 
-  // RAF loop — smooth video scrubbing
+  // RAF loop — smooth video scrubbing.
+  // On mobile, only update currentTime when the delta is meaningful to avoid
+  // triggering expensive seek operations that mobile browsers throttle.
   function videoLoop() {
     if (!videoReady || videoError) return;
 
@@ -134,8 +165,11 @@
     var dt = (now - lastFrameTime) / 1000;
     lastFrameTime = now;
 
+    // Re-pause guard — if the video somehow started playing, stop it
+    if (!video.paused) video.pause();
+
     var diff = targetTime - currentTime;
-    if (Math.abs(diff) > 0.0001) {
+    if (Math.abs(diff) > 0.001) {
       currentTime += diff * (1 - Math.exp(-dt * 10));
       video.currentTime = currentTime;
     }
@@ -322,12 +356,30 @@
   // ========================================
   // PASSIVE SCROLL HANDLER
   // ========================================
+  // On iOS Safari, scroll events can fire unreliably inside certain layouts.
+  // We add both scroll and touchmove listeners to ensure mobile updates.
   function onScroll() {
     updateHeader();
     handleHeroScroll();
   }
 
   window.addEventListener('scroll', onScroll, { passive: true });
+
+  // Mobile backup: touchmove fires reliably during finger scrolling.
+  // Only used to re-sync scroll progress; does not prevent default.
+  var isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  if (isTouchDevice) {
+    var touchScrollSync = null;
+    window.addEventListener('touchmove', function () {
+      // Throttle to one sync per animation frame during touch
+      if (!touchScrollSync) {
+        touchScrollSync = requestAnimationFrame(function () {
+          handleHeroScroll();
+          touchScrollSync = null;
+        });
+      }
+    }, { passive: true });
+  }
 
   // ========================================
   // SMOOTH SCROLL FOR ANCHOR LINKS
@@ -363,6 +415,7 @@
 
     // Retry video setup if metadata already loaded
     if (video && video.readyState >= 1) {
+      video.pause();
       videoReady = true;
       videoDuration = video.duration;
       currentTime = video.currentTime;
