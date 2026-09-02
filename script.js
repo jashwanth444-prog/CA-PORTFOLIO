@@ -77,6 +77,105 @@
   var rafId = null;
   var videoError = false;
 
+  // ========================================
+  // MOBILE/TABLET FRAME-SEQUENCE ENGINE
+  // ========================================
+  // On mobile/tablet, video seeking produces visible still-frame lag.
+  // Instead, we pre-extract 240 JPEG frames and render them to a canvas
+  // based on scroll position. Desktop continues using the video element.
+  var TOTAL_FRAMES = 240;
+  var FRAME_PATH = '/frames/frame_';
+  var useFrameSequence = window.matchMedia('(max-width: 1023px)').matches;
+  var canvas = document.getElementById('heroCanvas');
+  var ctx = canvas ? canvas.getContext('2d') : null;
+  var frameImages = [];           // Array of Image objects (indexed 0–239)
+  var frameLoaded = [];           // Boolean tracking load state per frame
+  var currentFrameIdx = -1;       // Currently rendered frame index
+  var targetFrameIdx = 0;         // Frame we want to show
+  var frameReadyCount = 0;        // How many frames have loaded
+  var FRAMES_TO_PRELOAD = 12;     // Preload window around current frame
+
+  // Activate frame-sequence mode on mobile/tablet
+  if (useFrameSequence && canvas && ctx) {
+    video.style.display = 'none';   // Hide video element on mobile
+    canvas.style.display = 'block'; // Show canvas on mobile
+  }
+
+  // Load a single frame by index (0–239)
+  function loadFrame(idx) {
+    if (idx < 0 || idx >= TOTAL_FRAMES) return;
+    if (frameImages[idx]) return; // Already loaded or loading
+    frameImages[idx] = new Image();
+    frameLoaded[idx] = false;
+    // Frame filenames: frame_0001.jpg through frame_0240.jpg
+    var num = idx + 1;
+    var name = num < 10 ? '000' + num : num < 100 ? '0' + num : '' + num;
+    frameImages[idx].src = FRAME_PATH + name + '.jpg';
+    frameImages[idx].onload = function () {
+      frameLoaded[idx] = true;
+      frameReadyCount++;
+      // Render immediately if this is the current target
+      if (idx === targetFrameIdx && idx !== currentFrameIdx) {
+        renderFrame(idx);
+      }
+    };
+  }
+
+  // Preload frames around the current position
+  function preloadAround(idx) {
+    var half = Math.floor(FRAMES_TO_PRELOAD / 2);
+    for (var i = idx - half; i <= idx + half; i++) {
+      loadFrame(i);
+    }
+  }
+
+  // Find the nearest already-loaded frame to idx (search outward)
+  function nearestLoadedFrame(idx) {
+    if (frameLoaded[idx]) return idx;
+    for (var d = 1; d < TOTAL_FRAMES; d++) {
+      if (idx - d >= 0 && frameLoaded[idx - d]) return idx - d;
+      if (idx + d < TOTAL_FRAMES && frameLoaded[idx + d]) return idx + d;
+    }
+    return -1; // Nothing loaded yet
+  }
+
+  // Render a frame to the canvas with object-fit: cover behavior
+  function renderFrame(idx) {
+    // If the exact frame isn't loaded, render the nearest loaded one as a placeholder
+    var renderIdx = idx;
+    if (!ctx || !frameImages[idx] || !frameLoaded[idx]) {
+      renderIdx = nearestLoadedFrame(idx);
+      if (renderIdx < 0) return; // Nothing loaded at all yet
+    }
+    var img = frameImages[renderIdx];
+    var cw = canvas.width;
+    var ch = canvas.height;
+    var iw = img.naturalWidth;
+    var ih = img.naturalHeight;
+
+    // Calculate cover dimensions (same as CSS object-fit: cover)
+    var scale = Math.max(cw / iw, ch / ih);
+    var sw = cw / scale;
+    var sh = ch / scale;
+    var sx = (iw - sw) / 2;
+    var sy = (ih - sh) / 2;
+
+    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, cw, ch);
+    currentFrameIdx = idx;
+  }
+
+  // Resize canvas to match viewport
+  function resizeCanvas() {
+    if (!canvas) return;
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = window.innerWidth * dpr;
+    canvas.height = window.innerHeight * dpr;
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+    // Re-render current frame at new size
+    if (currentFrameIdx >= 0) renderFrame(currentFrameIdx);
+  }
+
   // Content state elements
   var states = [];
   for (var i = 1; i <= 6; i++) {
@@ -103,7 +202,8 @@
       videoDuration = video.duration;
       video.style.opacity = '1';
       if (heroFallback) heroFallback.style.opacity = '0';
-      if (!rafId) {
+      // Only start video RAF on desktop; mobile uses frame-sequence RAF
+      if (!useFrameSequence && !rafId) {
         lastFrameTime = performance.now();
         rafId = requestAnimationFrame(videoLoop);
       }
@@ -121,7 +221,7 @@
       videoDuration = video.duration;
       video.style.opacity = '1';
       if (heroFallback) heroFallback.style.opacity = '0';
-      if (!rafId) {
+      if (!useFrameSequence && !rafId) {
         lastFrameTime = performance.now();
         rafId = requestAnimationFrame(videoLoop);
       }
@@ -147,26 +247,29 @@
     }
   }, 3000);
 
-  // RAF loop — smooth video scrubbing.
-  // Identical on desktop, tablet and mobile. Uses the same exponential
-  // smoothing so the animation timeline is device-independent.
+  // RAF loop — smooth video scrubbing (desktop) / frame rendering (mobile).
   function videoLoop() {
-    if (!videoReady || videoError) return;
-
     var now = performance.now();
-    var dt = (now - lastFrameTime) / 1000;
     lastFrameTime = now;
 
-    // Seek toward the target time set by scroll position.
-    // Both forward (scroll down) and backward (scroll up) are supported.
-    // No direction checks or clamping — currentTime may freely increase or decrease.
-    // High smoothing factor (0.5) keeps the video frame closely tracking scroll
-    // without visible lag. The scroll position itself is already smooth,
-    // so aggressive smoothing only adds unnecessary delay.
-    var diff = targetTime - currentTime;
-    if (Math.abs(diff) > 0.0001) {
-      currentTime += diff * 0.5;
-      video.currentTime = currentTime;
+    if (useFrameSequence && ctx) {
+      // MOBILE/TABLET: render frame directly from scroll position.
+      // No smoothing needed — frame index is derived directly from scroll
+      // progress, so it tracks instantly with no lag.
+      // Always attempt render — handles both new scroll targets AND frames
+      // that finished loading since the last RAF tick.
+      if (targetFrameIdx !== currentFrameIdx) {
+        renderFrame(targetFrameIdx);
+        preloadAround(targetFrameIdx);
+      }
+    } else {
+      // DESKTOP: seek video toward scroll-mapped time.
+      if (!videoReady || videoError) return;
+      var diff = targetTime - currentTime;
+      if (Math.abs(diff) > 0.0001) {
+        currentTime += diff * 0.5;
+        video.currentTime = currentTime;
+      }
     }
 
     rafId = requestAnimationFrame(videoLoop);
@@ -207,8 +310,15 @@
     var progress = getHeroProgress();
 
     // Update video target
-    if (videoReady && !videoError && !prefersReducedMotion) {
-      targetTime = progress * videoDuration;
+    if (!prefersReducedMotion) {
+      if (useFrameSequence) {
+        // MOBILE/TABLET: compute frame index directly from progress.
+        // No smoothing — frame tracks scroll position 1:1 for instant response.
+        targetFrameIdx = Math.round(progress * (TOTAL_FRAMES - 1));
+      } else if (videoReady && !videoError) {
+        // DESKTOP: map scroll to video time.
+        targetTime = progress * videoDuration;
+      }
     }
 
     // Update progress bar
@@ -396,8 +506,21 @@
       state5Steps.forEach(function (i) { i.classList.add('revealed'); });
     }
 
-    // Retry video setup if metadata already loaded
-    if (video && video.readyState >= 1) {
+    // Initialize frame-sequence on mobile/tablet
+    if (useFrameSequence && canvas && ctx) {
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+      // Preload first batch of frames immediately
+      preloadAround(0);
+      // Start RAF loop for frame rendering
+      if (!rafId) {
+        lastFrameTime = performance.now();
+        rafId = requestAnimationFrame(videoLoop);
+      }
+    }
+
+    // Retry video setup if metadata already loaded (desktop)
+    if (!useFrameSequence && video && video.readyState >= 1) {
       video.pause();
       videoReady = true;
       videoDuration = video.duration;
