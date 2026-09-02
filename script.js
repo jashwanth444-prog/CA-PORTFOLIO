@@ -156,8 +156,8 @@
   }, 3000);
 
   // RAF loop — smooth video scrubbing.
-  // On mobile, only update currentTime when the delta is meaningful to avoid
-  // triggering expensive seek operations that mobile browsers throttle.
+  // Identical on desktop, tablet and mobile. Uses the same exponential
+  // smoothing so the animation timeline is device-independent.
   function videoLoop() {
     if (!videoReady || videoError) return;
 
@@ -165,11 +165,11 @@
     var dt = (now - lastFrameTime) / 1000;
     lastFrameTime = now;
 
-    // Re-pause guard — if the video somehow started playing, stop it
+    // Re-pause guard — if the video somehow started playing, stop it.
     if (!video.paused) video.pause();
 
     var diff = targetTime - currentTime;
-    if (Math.abs(diff) > 0.001) {
+    if (Math.abs(diff) > 0.0001) {
       currentTime += diff * (1 - Math.exp(-dt * 10));
       video.currentTime = currentTime;
     }
@@ -187,12 +187,12 @@
 
   // Determine which content state to show (6 states)
   function getTargetState(progress) {
-    if (progress < 0.17) return 0;    // state 1: hero intro
-    if (progress < 0.33) return 1;    // state 2: ambitious businesses
-    if (progress < 0.50) return 2;    // state 3: expertise
-    if (progress < 0.66) return 3;    // state 4: stats
-    if (progress < 0.83) return 4;    // state 5: approach
-    return 5;                          // state 6: final CTA
+    if (progress < 0.20) return 0;    // state 1: hero intro        (0–20%)  → 0–2s
+    if (progress < 0.40) return 1;    // state 2: ambitious businesses (20–40%) → 2–4s
+    if (progress < 0.60) return 2;    // state 3: expertise          (40–60%) → 4–6s
+    if (progress < 0.80) return 3;    // state 4: stats              (60–80%) → 6–8s
+    if (progress < 1.00) return 4;    // state 5: approach           (80–100%)→ 8–10s
+    return 5;                          // state 6: final CTA          (100%)
   }
 
   // Sub-reveal items progressively within a state
@@ -290,8 +290,8 @@
 
     // Sub-reveal within active state
     if (targetIdx >= 0) {
-      var stateStarts = [0, 0.17, 0.33, 0.50, 0.66, 0.83];
-      var stateEnds   = [0.17, 0.33, 0.50, 0.66, 0.83, 1.0];
+      var stateStarts = [0, 0.20, 0.40, 0.60, 0.80, 1.0];
+      var stateEnds   = [0.20, 0.40, 0.60, 0.80, 1.0, 1.01]; // state 6 end >1 to avoid div-by-zero
       var sp = (progress - stateStarts[targetIdx]) / (stateEnds[targetIdx] - stateStarts[targetIdx]);
       sp = Math.max(0, Math.min(1, sp));
 
@@ -356,30 +356,18 @@
   // ========================================
   // PASSIVE SCROLL HANDLER
   // ========================================
-  // On iOS Safari, scroll events can fire unreliably inside certain layouts.
-  // We add both scroll and touchmove listeners to ensure mobile updates.
+  // Single scroll handler — fires on all platforms (desktop, tablet, mobile).
+  // The scroll event fires reliably on every modern browser including iOS Safari.
+  // No touchmove backup: a separate touchmove listener would double-fire
+  // handleHeroScroll() alongside scroll, causing redundant currentTime seeks
+  // that make the mobile animation feel faster/jumpier than desktop.
+  // The RAF videoLoop() smooths all interpolation identically on every device.
   function onScroll() {
     updateHeader();
     handleHeroScroll();
   }
 
   window.addEventListener('scroll', onScroll, { passive: true });
-
-  // Mobile backup: touchmove fires reliably during finger scrolling.
-  // Only used to re-sync scroll progress; does not prevent default.
-  var isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-  if (isTouchDevice) {
-    var touchScrollSync = null;
-    window.addEventListener('touchmove', function () {
-      // Throttle to one sync per animation frame during touch
-      if (!touchScrollSync) {
-        touchScrollSync = requestAnimationFrame(function () {
-          handleHeroScroll();
-          touchScrollSync = null;
-        });
-      }
-    }, { passive: true });
-  }
 
   // ========================================
   // SMOOTH SCROLL FOR ANCHOR LINKS
