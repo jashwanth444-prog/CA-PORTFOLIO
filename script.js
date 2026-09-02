@@ -157,12 +157,15 @@
     var dt = (now - lastFrameTime) / 1000;
     lastFrameTime = now;
 
-    // Smoothly interpolate toward the target time.
+    // Seek toward the target time set by scroll position.
     // Both forward (scroll down) and backward (scroll up) are supported.
     // No direction checks or clamping — currentTime may freely increase or decrease.
+    // High smoothing factor (0.5) keeps the video frame closely tracking scroll
+    // without visible lag. The scroll position itself is already smooth,
+    // so aggressive smoothing only adds unnecessary delay.
     var diff = targetTime - currentTime;
     if (Math.abs(diff) > 0.0001) {
-      currentTime += diff * (1 - Math.exp(-dt * 10));
+      currentTime += diff * 0.5;
       video.currentTime = currentTime;
     }
 
