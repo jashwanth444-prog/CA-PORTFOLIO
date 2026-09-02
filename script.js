@@ -88,79 +88,161 @@
   var useFrameSequence = window.matchMedia('(max-width: 1023px)').matches;
   var canvas = document.getElementById('heroCanvas');
   var ctx = canvas ? canvas.getContext('2d') : null;
-  var frameImages = [];           // Array of Image objects (indexed 0–239)
-  var frameLoaded = [];           // Boolean tracking load state per frame
+  var frameImages = [];           // Image objects (indexed 0–239)
+  var frameLoading = [];          // true while image src is being fetched
+  var frameDecoded = [];          // true only after img.decode() completes — safe to drawImage
   var currentFrameIdx = -1;       // Currently rendered frame index
   var targetFrameIdx = 0;         // Frame we want to show
-  var frameReadyCount = 0;        // How many frames have loaded
-  var FRAMES_TO_PRELOAD = 12;     // Preload window around current frame
+  var lastTargetFrameIdx = -1;    // Previous target — used to detect scroll direction
+  var scrollDirection = 1;        // 1 = scrolling down, -1 = scrolling up
+  var PRELOAD_AHEAD = 16;         // Frames to preload ahead in scroll direction
+  var PRELOAD_BEHIND = 8;         // Frames to preload behind in scroll direction
+  var MAX_CONCURRENT = 6;         // Max simultaneous image downloads
+  var activeLoads = 0;            // Current number of in-flight image loads
+  var loadQueue = [];             // Priority queue of frame indices waiting to load
+  var cachedScale = 0;            // Cached canvas cover scale
+  var cachedSw = 0;               // Cached source width for drawImage
+  var cachedSh = 0;               // Cached source height for drawImage
+  var cachedSx = 0;               // Cached source x offset
+  var cachedSy = 0;               // Cached source y offset
+  var cropReady = false;          // Whether crop values are cached
 
   // Activate frame-sequence mode on mobile/tablet
   if (useFrameSequence && canvas && ctx) {
-    video.style.display = 'none';   // Hide video element on mobile
-    canvas.style.display = 'block'; // Show canvas on mobile
+    video.style.display = 'none';
+    canvas.style.display = 'block';
   }
 
-  // Load a single frame by index (0–239)
-  function loadFrame(idx) {
+  // Precompute canvas crop values (same for every frame — only depends on canvas/frame dimensions)
+  function computeCrop() {
+    if (!canvas || cropReady) return;
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var cw = window.innerWidth * dpr;
+    var ch = window.innerHeight * dpr;
+    // Frames are 1280×720 — compute cover crop once
+    var iw = 1280, ih = 720;
+    cachedScale = Math.max(cw / iw, ch / ih);
+    cachedSw = cw / cachedScale;
+    cachedSh = ch / cachedScale;
+    cachedSx = (iw - cachedSw) / 2;
+    cachedSy = (ih - cachedSh) / 2;
+    cropReady = true;
+  }
+
+  // Process the load queue — called after each download completes and on preload trigger
+  function processLoadQueue() {
+    while (activeLoads < MAX_CONCURRENT && loadQueue.length > 0) {
+      var idx = loadQueue.shift();
+      if (frameImages[idx] || frameLoading[idx]) continue; // Already loading or loaded
+      startFrameLoad(idx);
+    }
+  }
+
+  // Start loading a single frame
+  function startFrameLoad(idx) {
     if (idx < 0 || idx >= TOTAL_FRAMES) return;
-    if (frameImages[idx]) return; // Already loaded or loading
-    frameImages[idx] = new Image();
-    frameLoaded[idx] = false;
-    // Frame filenames: frame_0001.jpg through frame_0240.jpg
+    if (frameImages[idx] || frameLoading[idx]) return;
+    frameLoading[idx] = true;
+    activeLoads++;
+    var img = new Image();
+    frameImages[idx] = img;
     var num = idx + 1;
     var name = num < 10 ? '000' + num : num < 100 ? '0' + num : '' + num;
-    frameImages[idx].src = FRAME_PATH + name + '.jpg';
-    frameImages[idx].onload = function () {
-      frameLoaded[idx] = true;
-      frameReadyCount++;
-      // Render immediately if this is the current target
-      if (idx === targetFrameIdx && idx !== currentFrameIdx) {
-        renderFrame(idx);
-      }
+    img.src = FRAME_PATH + name + '.jpg';
+    img.onload = function () {
+      // Use img.decode() to move JPEG→RGBA off the main thread.
+      // decoded = ready to drawImage without blocking.
+      var decodePromise = (typeof img.decode === 'function') ? img.decode() : Promise.resolve();
+      decodePromise.then(function () {
+        frameDecoded[idx] = true;
+        activeLoads--;
+        processLoadQueue();
+        // Render immediately if this is the current target
+        if (idx === targetFrameIdx && idx !== currentFrameIdx) {
+          renderFrame(idx);
+        }
+      })['catch'](function () {
+        // decode() rejected — mark as decoded anyway to avoid permanent stall
+        frameDecoded[idx] = true;
+        activeLoads--;
+        processLoadQueue();
+        if (idx === targetFrameIdx && idx !== currentFrameIdx) {
+          renderFrame(idx);
+        }
+      });
+    };
+    img.onerror = function () {
+      activeLoads--;
+      frameLoading[idx] = false;
+      frameImages[idx] = null;
+      processLoadQueue();
     };
   }
 
-  // Preload frames around the current position
-  function preloadAround(idx) {
-    var half = Math.floor(FRAMES_TO_PRELOAD / 2);
-    for (var i = idx - half; i <= idx + half; i++) {
-      loadFrame(i);
+  // Enqueue frames with directional priority.
+  // Called from the scroll handler — fires immediately on scroll, not in RAF.
+  // REBUILDS the queue each time so the exact target frame is always first.
+  function enqueueFrames(targetIdx) {
+    var dir = scrollDirection;
+    // Purge stale entries from loadQueue (keep only frames still useful)
+    var MAX_USEFUL_DISTANCE = PRELOAD_AHEAD + PRELOAD_BEHIND + 4;
+    loadQueue = loadQueue.filter(function (fi) {
+      return Math.abs(fi - targetIdx) <= MAX_USEFUL_DISTANCE;
+    });
+    // Build priority list: target first, then directional ahead, then behind, then nearby
+    var priority = [];
+    // 1. Target frame — absolute highest priority
+    priority.push(targetIdx);
+    // 2. Frames immediately ahead in scroll direction (closest = highest)
+    for (var i = 1; i <= PRELOAD_AHEAD; i++) {
+      var ahead = dir > 0 ? targetIdx + i : targetIdx - i;
+      if (ahead >= 0 && ahead < TOTAL_FRAMES) priority.push(ahead);
     }
+    // 3. Frames behind in scroll direction
+    for (var j = 1; j <= PRELOAD_BEHIND; j++) {
+      var behind = dir > 0 ? targetIdx - j : targetIdx + j;
+      if (behind >= 0 && behind < TOTAL_FRAMES) priority.push(behind);
+    }
+    // 4. Remaining nearby frames (both directions)
+    for (var k = 1; k <= PRELOAD_AHEAD + PRELOAD_BEHIND; k++) {
+      var both = [targetIdx - PRELOAD_BEHIND - k, targetIdx + PRELOAD_AHEAD + k];
+      for (var b = 0; b < 2; b++) {
+        if (both[b] >= 0 && both[b] < TOTAL_FRAMES) priority.push(both[b]);
+      }
+    }
+    // Deduplicate: skip decoded, currently loading, or already queued
+    var seen = {};
+    for (var p = 0; p < loadQueue.length; p++) seen[loadQueue[p]] = true;
+    for (var q = 0; q < priority.length; q++) {
+      var fi = priority[q];
+      if (seen[fi] || frameDecoded[fi] || frameLoading[fi]) continue;
+      seen[fi] = true;
+      loadQueue.push(fi);
+    }
+    processLoadQueue();
   }
 
-  // Find the nearest already-loaded frame to idx (search outward)
-  function nearestLoadedFrame(idx) {
-    if (frameLoaded[idx]) return idx;
+  // Find the nearest already-decoded frame to idx (search outward)
+  function nearestDecodedFrame(idx) {
+    if (frameDecoded[idx]) return idx;
     for (var d = 1; d < TOTAL_FRAMES; d++) {
-      if (idx - d >= 0 && frameLoaded[idx - d]) return idx - d;
-      if (idx + d < TOTAL_FRAMES && frameLoaded[idx + d]) return idx + d;
+      if (idx - d >= 0 && frameDecoded[idx - d]) return idx - d;
+      if (idx + d < TOTAL_FRAMES && frameDecoded[idx + d]) return idx + d;
     }
-    return -1; // Nothing loaded yet
+    return -1;
   }
 
   // Render a frame to the canvas with object-fit: cover behavior
   function renderFrame(idx) {
-    // If the exact frame isn't loaded, render the nearest loaded one as a placeholder
     var renderIdx = idx;
-    if (!ctx || !frameImages[idx] || !frameLoaded[idx]) {
-      renderIdx = nearestLoadedFrame(idx);
-      if (renderIdx < 0) return; // Nothing loaded at all yet
+    if (!ctx || !frameDecoded[idx]) {
+      renderIdx = nearestDecodedFrame(idx);
+      if (renderIdx < 0) return;
     }
     var img = frameImages[renderIdx];
-    var cw = canvas.width;
-    var ch = canvas.height;
-    var iw = img.naturalWidth;
-    var ih = img.naturalHeight;
-
-    // Calculate cover dimensions (same as CSS object-fit: cover)
-    var scale = Math.max(cw / iw, ch / ih);
-    var sw = cw / scale;
-    var sh = ch / scale;
-    var sx = (iw - sw) / 2;
-    var sy = (ih - sh) / 2;
-
-    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, cw, ch);
+    if (!img) return;
+    computeCrop();
+    ctx.drawImage(img, cachedSx, cachedSy, cachedSw, cachedSh, 0, 0, canvas.width, canvas.height);
     currentFrameIdx = idx;
   }
 
@@ -172,7 +254,8 @@
     canvas.height = window.innerHeight * dpr;
     canvas.style.width = '100%';
     canvas.style.height = '100%';
-    // Re-render current frame at new size
+    cropReady = false;
+    computeCrop();
     if (currentFrameIdx >= 0) renderFrame(currentFrameIdx);
   }
 
@@ -253,14 +336,11 @@
     lastFrameTime = now;
 
     if (useFrameSequence && ctx) {
-      // MOBILE/TABLET: render frame directly from scroll position.
-      // No smoothing needed — frame index is derived directly from scroll
-      // progress, so it tracks instantly with no lag.
-      // Always attempt render — handles both new scroll targets AND frames
-      // that finished loading since the last RAF tick.
-      if (targetFrameIdx !== currentFrameIdx) {
+      // MOBILE/TABLET: render the target frame if decoded, else nearest decoded.
+      // Also re-render if the previously-unavailable target has now been decoded.
+      var targetReady = frameDecoded[targetFrameIdx];
+      if (targetFrameIdx !== currentFrameIdx || (targetReady && currentFrameIdx !== targetFrameIdx)) {
         renderFrame(targetFrameIdx);
-        preloadAround(targetFrameIdx);
       }
     } else {
       // DESKTOP: seek video toward scroll-mapped time.
@@ -313,8 +393,16 @@
     if (!prefersReducedMotion) {
       if (useFrameSequence) {
         // MOBILE/TABLET: compute frame index directly from progress.
-        // No smoothing — frame tracks scroll position 1:1 for instant response.
-        targetFrameIdx = Math.round(progress * (TOTAL_FRAMES - 1));
+        // Detect scroll direction for preload prioritization.
+        var newTarget = Math.round(progress * (TOTAL_FRAMES - 1));
+        if (newTarget !== targetFrameIdx) {
+          scrollDirection = newTarget > targetFrameIdx ? 1 : -1;
+          lastTargetFrameIdx = targetFrameIdx;
+          targetFrameIdx = newTarget;
+          // PROACTIVE PRELOAD: start downloading frames immediately on scroll.
+          // This fires in the scroll event, not in RAF — no 16ms delay.
+          enqueueFrames(targetFrameIdx);
+        }
       } else if (videoReady && !videoError) {
         // DESKTOP: map scroll to video time.
         targetTime = progress * videoDuration;
@@ -510,8 +598,9 @@
     if (useFrameSequence && canvas && ctx) {
       resizeCanvas();
       window.addEventListener('resize', resizeCanvas);
-      // Preload first batch of frames immediately
-      preloadAround(0);
+      computeCrop();
+      // Enqueue first batch of frames for immediate loading
+      enqueueFrames(0);
       // Start RAF loop for frame rendering
       if (!rafId) {
         lastFrameTime = performance.now();
