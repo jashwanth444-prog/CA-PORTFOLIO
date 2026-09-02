@@ -110,14 +110,6 @@
     }
   });
 
-  // Guard: if anything triggers play(), immediately re-pause.
-  // On mobile the browser may attempt autoplay; we always want scroll-controlled frames.
-  video.addEventListener('play', function () {
-    if (videoReady && !videoError) {
-      video.pause();
-    }
-  });
-
   // Mobile fallback: some browsers (esp. iOS Safari) fire canplay after
   // loadedmetadata but before enough data is buffered for smooth seeking.
   // If videoReady was set by loadedmetadata this is a no-op; otherwise it
@@ -165,9 +157,9 @@
     var dt = (now - lastFrameTime) / 1000;
     lastFrameTime = now;
 
-    // Re-pause guard — if the video somehow started playing, stop it.
-    if (!video.paused) video.pause();
-
+    // Smoothly interpolate toward the target time.
+    // Both forward (scroll down) and backward (scroll up) are supported.
+    // No direction checks or clamping — currentTime may freely increase or decrease.
     var diff = targetTime - currentTime;
     if (Math.abs(diff) > 0.0001) {
       currentTime += diff * (1 - Math.exp(-dt * 10));
