@@ -1,0 +1,10 @@
+{
+  "name": "meridian-stone-portfolio",
+  "version": "1.0.0",
+  "description": "Meridian & Stone - Chartered Accountants & Financial Advisory Portfolio",
+  "private": true,
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js"
+  }
+}
